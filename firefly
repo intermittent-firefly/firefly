@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import subprocess
+import argparse
+import sys
+import pathlib
+from shutil import copyfile
+
+
+from src.parser import *
+from src.log import *
+
+class Firefly:
+    ff_args = None
+    to_rocket = None
+    log = None
+    emulator = "./bin/emulator-freechips.rocketchip.system-freechips.rocketchip.system.DefaultConfig"
+    debug = "./bin/emulator-freechips.rocketchip.system-freechips.rocketchip.system.DefaultConfig-debug"
+    prog = None
+
+    def __init__(self, ff_args, to_rocket):
+        self.ff_args = ff_args
+        self.to_rocket = to_rocket
+        self.prog = ff_args.binary
+
+    def runSim(self):
+        pathlib.Path(self.ff_args.output_dir).mkdir(parents=True, exist_ok=True)
+        copyfile(self.ff_args.voltage_input, self.ff_args.output_dir+"/voltage_input.txt")
+        print("directory created")
+        cmd = []
+        # Choose which emulator use based on arguments
+        if "-v" in self.to_rocket:
+            cmd.append(self.debug)
+        else:
+            cmd.append(self.emulator)
+        cmd.extend(self.to_rocket)
+        cmd.extend(["-d", self.ff_args.output_dir])
+        cmd.extend(["-i", self.ff_args.voltage_input])
+        cmd.extend(["-t", self.ff_args.voltage_threshold])
+        cmd.append(self.prog)
+        try:
+            subprocess.run(cmd, check=True)
+        except subprocess.CalledProcessError as e:
+            print("Failed to run Rocket emulator with command: ", cmd, file=sys.stderr)
+            sys.exit(-1)
+        self.readLog(self.ff_args.output_dir+"/"+"firefly_report.log")
+        self.readVoltageTrace(self.ff_args.voltage_input)
+        self.saveExecutionPlot()
+
+    def readLog(self, path):
+        self.log = Log()
+        parser = Parser(self.log)
+        parser.readLog(path)
+
+    def readVoltageTrace(self, path):
+        self.log.readVoltageTrace(path)
+
+    def printLog(self):
+        self.log.print()
+
+    def showExecutionPlot(self):
+        self.log.createExecutionPlot(None)
+
+    def saveExecutionPlot(self):
+        self.log.createExecutionPlot(self.ff_args.output_dir+"/")
+
+    def printResults(self, path=None):
+        if path != None:
+            f = open(path, "w")
+        else:
+            f = None
+        self.log.print(f)
+        if f != None:
+            f.close()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("binary", help="RISC-V binary")
+    parser.add_argument("-d", "--output-dir", default="output",
+                           help="Save all simulation generated files in the specified \n\
+                           directory. If not given, a directory named \"output\" will be\
+                           created")
+    parser.add_argument("-i", "--voltage-input", default="voltage_input.txt",
+                           help="Voltage trace used in simulation. If not specified, \n\
+                           Firefly assume that a file named \"voltage-input.txt\" \n\
+                           exists and will try to use it")
+    parser.add_argument("-t", "--voltage-threshold", required=True,
+                           help="Whenever voltage is below the threshold, a interrupt \n\
+                           is triggered and Rocket will save its context in memory")
+    ff_args = parser.parse_args()
+    to_rocket = []
+
+    ff_args, to_rocket = parser.parse_known_args()
+    ff = Firefly(ff_args, to_rocket)
+    ff.runSim()
+
+    ff.readLog(ff_args.output_dir+"/firefly_report.log")
+    ff.readVoltageTrace(ff_args.voltage_input)
+    ff.saveExecutionPlot()
+    #ff.showExecutionPlot()
+    ff.printResults(ff_args.output_dir+"/"+"results.txt")
+    #ff.printResults(None)
+
+main()

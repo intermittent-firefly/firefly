@@ -1,0 +1,6 @@
+[submodule "riscv/rocket-chip"]
+	path = riscv/rocket-chip
+	url = https://github.com/chipsalliance/rocket-chip.git
+[submodule "NVmain"]
+	path = NVmain
+	url = https://github.com/SEAL-UCSB/NVmain.git
