@@ -4,11 +4,11 @@ Firefly extends rocket-chip simulation environment to enable simulation in inter
 
 Cloning:
 ```
-git clone --recurse-submodules https://github.com/Zeldax64/firefly.git
+git clone --recurse-submodules https://github.com/intermittent-firefly/firefly.git
 ```
 or
 ```
-git clone https://github.com/Zeldax64/firefly.git
+git clone https://github.com/intermittent-firefly/firefly.git
 cd firefly
 git submodule update --init --recursive
 ```
