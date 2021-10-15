@@ -49,3 +49,24 @@ Firefly is composed by python scripts, and C++ code which extends rocket's simul
 In Rocket, external interrupts are routed to PLIC. If PLIC is configured to accept external interrupts, then the Rocket core will jump to an interrupt routine. To create a communication interface between the simulation environment and the processor, we constantly probe the mscratch CSR. We chose this register because it is never written by hardware, and any write or read to a CSR is almost instantaneous.
 
 This enable the simulation environment to know Rocket's states along the binary execution, e.g. if its handling a power emergency interruption, turned off or executing the application.
+
+## To cite this work:
+
+@inproceedings{firefly,
+  author    = {Hiago Rocha and
+               Guilherme Korol and
+               Michael Guilherme Jordan and
+               Arthur M. Krause and
+               Ronaldo Silveira and
+               Caio Vieira and
+               Philippe O. A. Navaux and
+               Gabriel L. Nazar and
+               Luigi Carro and
+               Antonio Carlos Schneider Beck},
+  title     = {Firefly: An Open-source Rocket-based Intermittent Framework},
+  booktitle = {33rd Symposium on Integrated Circuits and Systems Design, {SBCCI}
+               2020, Campinas, Brazil, August 24-28, 2020},
+  pages     = {1--6},
+  publisher = {{IEEE}},
+  year      = {2020}
+}
